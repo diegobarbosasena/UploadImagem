@@ -3,9 +3,17 @@ package controller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 
+import ajudantes.Conexao;
 import dao.ImagemDAO;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -69,12 +77,15 @@ public class ImagemController implements Initializable{
 		btnLeft.setOnAction(i -> rodar(-90));
 		btnRight.setOnAction(i -> rodar(90));
 		btnDown.setOnAction(i -> rodar(180));
-		
-		
-		
+	
 		btnProcurar.setOnAction(o -> abrirFotos());
+		//preencher();
+		
+		
+		btnDeletar.setOnAction(o -> pega());
+		
 		btnSalvar.setOnAction(i -> cadastar());
-		//btnDeletar.setOnAction(o -> rodar(rodar));
+		
 	}
 	
 	public void abrirFotos() {
@@ -82,7 +93,6 @@ public class ImagemController implements Initializable{
 		fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("imagens", "*.jpg", "*.png"));
 		
-		//single file selection
 		file = fileChooser.showOpenDialog(panePrinc.getScene().getWindow()); 
 		
 		if (file != null) {
@@ -104,14 +114,77 @@ public class ImagemController implements Initializable{
 	
 	public void cadastar() {
 		
-		Imagem imagem = new Imagem();
-		
-		imagem.setImagem(fis);
-		imagem.setNome(txtNome.getText());
-		
+		try {
+			fis = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		ImagemDAO imagemDAO = new ImagemDAO();
-		imagemDAO.insert(imagem);
+		imagemDAO.insert(txtNome.getText() , fis);
 		
+	}
+	
+	private void preencher() {
+		
+		listNome.getItems().clear();
+		
+		Conexao c = new Conexao();
+		
+		try {
+			Connection conn = c.getConnection();
+			
+			ResultSet rs = conn.createStatement().executeQuery("select * from imagem");
+			
+			while (rs.next()) {
+				
+				Imagem i = new Imagem();
+				
+				i.setId(rs.getLong("id"));
+				i.setNome(rs.getString("nome"));
+				
+				//trás a imagem do bando de dados
+				InputStream is = rs.getBinaryStream("imagem");
+				OutputStream os = new FileOutputStream(new File("photo.jpg"));
+				
+				byte[] content = new byte[1024];
+				int size = 0;
+				
+				while ((size = is.read(content)) != -1) {
+					os.write(content, 0, size);
+				}
+				
+				System.out.println("IS " + is);
+				System.out.println("OS " + os);
+				
+				Image image = new Image("file:photo");
+				
+				
+				
+				os.close();
+				is.close();
+
+				listNome.getItems().add(i);
+			}
+			
+			rs.close();
+			conn.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void pega() {
+		
+		Imagem i = new Imagem();
+		
+		i = listNome.getSelectionModel().getSelectedItem();
+		System.out.println("Item selecionado " + i);
 	}
 	
 	public void rodar(int rodar) {

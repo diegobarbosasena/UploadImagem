@@ -1,13 +1,17 @@
 package model;
 
-import java.io.FileInputStream;
-
 public class Imagem {
 
 	private Long id;
 	private String nome;
-	private FileInputStream imagem;
+	private byte[] imagem;
 	
+	public byte[] getImagem() {
+		return imagem;
+	}
+	public void setImagem(byte[] imagem) {
+		this.imagem = imagem;
+	}
 	public Long getId() {
 		return id;
 	}
@@ -20,10 +24,11 @@ public class Imagem {
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
-	public FileInputStream getImagem() {
-		return imagem;
+	
+	@Override
+	public String toString() {
+		return "Imagem [id=" + id + ", nome=" + nome + ", imagem=" + imagem + "]";
 	}
-	public void setImagem(FileInputStream fis) {
-		this.imagem = fis;
-	}
+	
+	
 }
