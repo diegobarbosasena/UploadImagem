@@ -11,4 +11,4 @@ create table imagem (
     imagem longblob 
 );
 
-select * from imagem ;
+select * from imagem order by id desc;

@@ -1,7 +1,11 @@
 package dao;
 
-import java.io.FileInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ajudantes.Conexao;
+import javafx.scene.image.Image;
 import model.Imagem;
 
 public class ImagemDAO {
@@ -24,14 +29,14 @@ public class ImagemDAO {
 		}
 	}
 	
-	public void insert(String imagem, FileInputStream file) {
+	public void insert(String nome, InputStream imagem, int i) {
 		
 		String sql = "insert into imagem (nome , imagem) values (?,?)";
 		
 		try {
 			PreparedStatement stmt = connection.prepareStatement(sql);
-			stmt.setString(1, imagem);
-			stmt.setBinaryStream(2,(InputStream) file);
+			stmt.setString(1, nome);
+			stmt.setBinaryStream(2, imagem);
 			
 			stmt.execute();
 			stmt.close();
@@ -41,15 +46,15 @@ public class ImagemDAO {
 		}
 	}
 	
-	public void atualizar(Imagem imagem) {
+	public void atualizar(String nome, InputStream imagem, int i, Long id) {
 		
 		String sql = "update imagem set nome = ?, imagem = ? where id = ?";
 		
 		try {
 			PreparedStatement stmt = connection.prepareStatement(sql);
-			stmt.setString(1, imagem.getNome());
-			stmt.setBytes(2, imagem.getImagem());
-			stmt.setLong(3, imagem.getId());
+			stmt.setString(1, nome);
+			stmt.setBinaryStream(2, imagem);
+			stmt.setLong(3, id);
 			
 			stmt.execute();
 			stmt.close();
@@ -79,33 +84,50 @@ public class ImagemDAO {
 		List<Imagem> lstImagem = new ArrayList<>();
 		
 		try {
-			PreparedStatement stmt = this.connection.prepareStatement("select * from imagem");
+			PreparedStatement stmt = this.connection.prepareStatement("select * from imagem where id = 2");
 			
 			ResultSet rs = stmt.executeQuery();
 			
 			while (rs.next()) {
 				
-				Imagem imagem = new Imagem();
+				Imagem i = new Imagem();
 				
-				imagem.setId(rs.getLong("id"));
-				imagem.setNome(rs.getString("nome"));
+				i.setId(rs.getLong("id"));
+				i.setNome(rs.getString("nome"));
 				
-				//imagem.setImagem(imagem);(rs.getBinaryStream("imagem"));
+				//trás a imagem do bando de dados
+				InputStream is = rs.getBinaryStream("imagem");
+				OutputStream os = new FileOutputStream(new File("photo.png"));
 				
-				lstImagem.add(imagem);
+				byte[] content = new byte[1024];
+				int size = 0;
+				
+				while ((size = is.read(content)) != -1) {
+					
+					os.write(content, 0, size);
+				}
+				
+				Image image = new Image("file:photo.jpg");
+				
+				i.setImagem(content);
+				
+				os.close();
+				is.close();
+
+				lstImagem.add(i);
 			}
 			
 			rs.close();
-			stmt.close();
-			
-			return lstImagem;
+			connection.close();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		return null;	
+		return lstImagem;
 	}
-
-	
 	
 }
