@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ajudantes.Conexao;
-import javafx.scene.image.Image;
 import model.Imagem;
 
 public class ImagemDAO {
@@ -84,7 +83,7 @@ public class ImagemDAO {
 		List<Imagem> lstImagem = new ArrayList<>();
 		
 		try {
-			PreparedStatement stmt = this.connection.prepareStatement("select * from imagem where id = 2");
+			PreparedStatement stmt = this.connection.prepareStatement("select * from imagem ");
 			
 			ResultSet rs = stmt.executeQuery();
 			
@@ -95,8 +94,8 @@ public class ImagemDAO {
 				i.setId(rs.getLong("id"));
 				i.setNome(rs.getString("nome"));
 				
-				//trás a imagem do bando de dados
-				InputStream is = rs.getBinaryStream("imagem");
+				
+				InputStream is = rs.getBinaryStream("imagem"); //trás a imagem do bando de dados
 				OutputStream os = new FileOutputStream(new File("photo.png"));
 				
 				byte[] content = new byte[1024];
@@ -106,9 +105,13 @@ public class ImagemDAO {
 					
 					os.write(content, 0, size);
 				}
+	
+				//Image image = new Image("file:photo.jpg");
 				
-				Image image = new Image("file:photo.jpg");
+			
 				
+			
+			
 				i.setImagem(content);
 				
 				os.close();
