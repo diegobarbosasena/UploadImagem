@@ -3,10 +3,10 @@ package controller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import ajudantes.Alert;
 import dao.ImagemDAO;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -58,7 +58,7 @@ public class ImagemController implements Initializable{
 	private File file;
 	private Image image;
 	private FileInputStream fis;
-	
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
@@ -69,17 +69,15 @@ public class ImagemController implements Initializable{
 		btnRight.setOnAction(i -> rodar(90));
 		btnDown.setOnAction(i -> rodar(180));
 	
-		btnProcurar.setOnAction(o -> abrirFotos());
-		preencher();
-		
-		
-		btnDeletar.setOnAction(o -> pega());
+		btnProcurar.setOnAction(o -> buscarFotos());
 		
 		btnSalvar.setOnAction(i -> cadastar());
 		
+		preencher();
+		exibir();	
 	}
 	
-	public void abrirFotos() {
+	private void buscarFotos() {
 		
 		fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("imagens", "*.jpg", "*.png"));
@@ -103,7 +101,7 @@ public class ImagemController implements Initializable{
 		}
 	}
 	
-	public void cadastar() {
+	private void cadastar() {
 		
 		try {
 			fis = new FileInputStream(file);
@@ -111,12 +109,14 @@ public class ImagemController implements Initializable{
 			e.printStackTrace();
 		}
 		ImagemDAO imagemDAO = new ImagemDAO();
-		imagemDAO.insert(txtNome.getText() , (InputStream)fis, (int)file.length());
-		
+
+		imagemDAO.insert(txtNome.getText() , fis);
+			
 		preencher();
-		
+			
 		imgView.setImage(null);
-		
+		txtNome.clear();
+		lblCaminho.setText(null);	
 	}
 	
 	private void preencher() {
@@ -125,26 +125,26 @@ public class ImagemController implements Initializable{
 		
 		ImagemDAO imagemDAO = new ImagemDAO();
 		
-		//imagemDAO.visualizar();
-		
-		listNome.getItems().addAll(imagemDAO.visualizar());
+		listNome.getItems().addAll(imagemDAO.listar());
 		
 	}
 	
-	public void pega() {
+	private void exibir(){
 		
-		Imagem i = new Imagem();
+		listNome.setOnMouseClicked(i -> {
+			
+			Imagem imagem = listNome.getSelectionModel().getSelectedItem();
+			
+			ImagemDAO dao = new ImagemDAO();
+	
+			image = dao.visualizar(imagem.getId());
 		
-		i = listNome.getSelectionModel().getSelectedItem();
-		System.out.println("Item selecionado " + i.getId());
-		
-		
-		
-		
+			imgView.setImage(image);
+		});
 	}
 	
 	public void rodar(int rodar) {
-		imgView.setRotate(rodar);
+		imgView.setRotate(rodar);	
 	}
 	
 

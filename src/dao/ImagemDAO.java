@@ -14,11 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ajudantes.Conexao;
+import javafx.scene.image.Image;
 import model.Imagem;
 
 public class ImagemDAO {
-
+	
 	private Connection connection;
+	
+	private Image image;
 	
 	public ImagemDAO() {
 		try {
@@ -28,7 +31,7 @@ public class ImagemDAO {
 		}
 	}
 	
-	public void insert(String nome, InputStream imagem, int i) {
+	public void insert(String nome, InputStream imagem) {
 		
 		String sql = "insert into imagem (nome , imagem) values (?,?)";
 		
@@ -45,7 +48,7 @@ public class ImagemDAO {
 		}
 	}
 	
-	public void atualizar(String nome, InputStream imagem, int i, Long id) {
+	public void atualizar(String nome, InputStream imagem, Long id) {
 		
 		String sql = "update imagem set nome = ?, imagem = ? where id = ?";
 		
@@ -78,50 +81,65 @@ public class ImagemDAO {
 		
 	}
 	
-	public List<Imagem> visualizar() {
-
-		List<Imagem> lstImagem = new ArrayList<>();
+	public List<Imagem> listar(){
+		
+		List<Imagem> lstImagens = new ArrayList<Imagem>();
 		
 		try {
-			PreparedStatement stmt = this.connection.prepareStatement("select * from imagem ");
+			PreparedStatement stmt = this.connection.prepareStatement("select * from imagem");
 			
 			ResultSet rs = stmt.executeQuery();
 			
 			while (rs.next()) {
 				
-				Imagem i = new Imagem();
+				Imagem imagem = new Imagem();
 				
-				i.setId(rs.getLong("id"));
-				i.setNome(rs.getString("nome"));
+				imagem.setId(rs.getLong("id"));
+				imagem.setNome(rs.getNString("nome"));
 				
-				
-				InputStream is = rs.getBinaryStream("imagem"); //trás a imagem do bando de dados
-				OutputStream os = new FileOutputStream(new File("photo.png"));
+				lstImagens.add(imagem);
+			}
+			
+			rs.close();
+			stmt.close();
+			
+			return lstImagens;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public Image visualizar(Long id) {
+
+		String sql = "select * from imagem where id = ?";
+		
+		try {
+			
+			PreparedStatement pst = (PreparedStatement) connection.prepareStatement(sql);
+			pst.setLong(1, id);
+			ResultSet rs = pst.executeQuery();
+			
+			while (rs.next()) {
+							
+				InputStream is = rs.getBinaryStream("imagem");
+				OutputStream os = new FileOutputStream(new File("photo.jpg"));
 				
 				byte[] content = new byte[1024];
 				int size = 0;
 				
 				while ((size = is.read(content)) != -1) {
-					
 					os.write(content, 0, size);
 				}
-	
-				//Image image = new Image("file:photo.jpg");
-				
-			
-				
-			
-			
-				i.setImagem(content);
-				
 				os.close();
 				is.close();
-
-				lstImagem.add(i);
+				
+				image = new Image("file:photo.jpg", true);
 			}
 			
+			pst.close();
 			rs.close();
-			connection.close();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -130,7 +148,8 @@ public class ImagemDAO {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return lstImagem;
+		
+		return image;
 	}
 	
 }
