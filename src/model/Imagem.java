@@ -27,7 +27,7 @@ public class Imagem {
 	
 	@Override
 	public String toString() {
-		return "nome: " + nome + " - " + "imagem: " + imagem ;
+		return nome;
 	}
 	
 }

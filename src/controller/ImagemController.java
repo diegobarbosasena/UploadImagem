@@ -30,15 +30,11 @@ public class ImagemController implements Initializable{
 	@FXML
 	private ImageView imgView;
 	@FXML
-	private ImageView imgReceber;
-	@FXML
 	private Button btnProcurar;
 	@FXML
 	private TextField txtNome;
 	@FXML
 	private Button btnSalvar;
-	@FXML
-	private Button btnVisualizar;
 	@FXML
 	private Button btnUp;
 	@FXML
@@ -70,14 +66,16 @@ public class ImagemController implements Initializable{
 		btnDown.setOnAction(i -> rodar(180));
 	
 		btnProcurar.setOnAction(o -> buscarFotos());
-		
 		btnSalvar.setOnAction(i -> cadastar());
+		btnDeletar.setOnAction(i -> deletar());
 		
 		preencher();
 		exibir();	
 	}
 	
 	private void buscarFotos() {
+		
+		imgView.setImage(null);
 		
 		fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("imagens", "*.jpg", "*.png"));
@@ -103,20 +101,31 @@ public class ImagemController implements Initializable{
 	
 	private void cadastar() {
 		
-		try {
-			fis = new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		ImagemDAO imagemDAO = new ImagemDAO();
+		if (txtNome.getText().isEmpty() || file == null) {		
+			Alert.showAlertWarning("Preencha todos os campos");
+		} else {
+			
+			try {
+				fis = new FileInputStream(file);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			ImagemDAO imagemDAO = new ImagemDAO();
 
-		imagemDAO.insert(txtNome.getText() , fis);
-			
-		preencher();
-			
-		imgView.setImage(null);
-		txtNome.clear();
-		lblCaminho.setText(null);	
+			if (imagemDAO.insert(txtNome.getText() , fis)) {
+					
+				preencher();
+					
+				imgView.setImage(null);
+				txtNome.clear();
+				lblCaminho.setText(null);
+					
+				Alert.showAlertInformation("Sucesso");
+					
+			} else {	
+				Alert.showAlertError("Erro ao cadastrar");
+			}	
+		}
 	}
 	
 	private void preencher() {
@@ -135,17 +144,44 @@ public class ImagemController implements Initializable{
 			
 			Imagem imagem = listNome.getSelectionModel().getSelectedItem();
 			
-			ImagemDAO dao = new ImagemDAO();
+			if (imagem == null) {
+				
+				Alert.showAlertWarning("Nenhum item selecionado");
+				
+			} else {
+				
+				ImagemDAO dao = new ImagemDAO();
 	
-			image = dao.visualizar(imagem.getId());
+				image = dao.visualizar(imagem.getId());
 		
-			imgView.setImage(image);
+				imgView.setImage(image);
+			}
 		});
+	}
+	
+	private void deletar() {
+		
+		Imagem imagem = listNome.getSelectionModel().getSelectedItem();
+		
+		if (imagem == null) {
+			Alert.showAlertWarning("Selecione um um item");
+		} else {
+			
+			ImagemDAO imagemDAO = new ImagemDAO();
+			
+			if (imagemDAO.delete(imagem)) {
+				
+				Alert.showAlertInformation("Item deletado com sucesso");
+				preencher();
+				imgView.setImage(null);
+				
+			} else {	
+				Alert.showAlertError("Erro ao deletar");
+			}		
+		}
 	}
 	
 	public void rodar(int rodar) {
 		imgView.setRotate(rodar);	
 	}
-	
-
 }

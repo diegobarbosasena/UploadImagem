@@ -31,7 +31,7 @@ public class ImagemDAO {
 		}
 	}
 	
-	public void insert(String nome, InputStream imagem) {
+	public boolean insert(String nome, InputStream imagem) {
 		
 		String sql = "insert into imagem (nome , imagem) values (?,?)";
 		
@@ -42,13 +42,16 @@ public class ImagemDAO {
 			
 			stmt.execute();
 			stmt.close();
-
+			
+			return true;
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
-	public void atualizar(String nome, InputStream imagem, Long id) {
+	public boolean atualizar(String nome, InputStream imagem, Long id) {
 		
 		String sql = "update imagem set nome = ?, imagem = ? where id = ?";
 		
@@ -61,12 +64,14 @@ public class ImagemDAO {
 			stmt.execute();
 			stmt.close();
 
+			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
-	public void delete(Imagem imagem) {
+	public boolean delete(Imagem imagem) {
 		
 		try {
 			PreparedStatement stmt = connection.prepareStatement("delete from imagem where id = ?");
@@ -75,8 +80,11 @@ public class ImagemDAO {
 			stmt.execute();
 			stmt.close();
 			
+			return true;
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return false;
 		}
 		
 	}
