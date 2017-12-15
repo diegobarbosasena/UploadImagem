@@ -103,7 +103,7 @@ public class ImagemDAO {
 				Imagem imagem = new Imagem();
 				
 				imagem.setId(rs.getLong("id"));
-				imagem.setNome(rs.getNString("nome"));
+				imagem.setNome(rs.getString("nome"));
 				
 				lstImagens.add(imagem);
 			}
@@ -118,6 +118,38 @@ public class ImagemDAO {
 		}
 		return null;
 	}
+	
+	public List<Imagem> getImagem(Long id){
+		
+		List<Imagem> lstImagens = new ArrayList<Imagem>();
+		
+		try {
+			PreparedStatement stmt = this.connection.prepareStatement("select * from imagem where id = ?");
+			stmt.setLong(1, id);
+			
+			ResultSet rs = stmt.executeQuery();
+			
+			while (rs.next()) {
+				
+				Imagem imagem = new Imagem();
+				
+				imagem.setId(rs.getLong("id"));
+				imagem.setNome(rs.getString("nome"));
+				
+				lstImagens.add(imagem);
+			}
+			
+			rs.close();
+			stmt.close();
+			
+			return lstImagens;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+		
+	} 
 	
 	public Image visualizar(Long id) {
 
@@ -156,7 +188,6 @@ public class ImagemDAO {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 		return image;
 	}
 	

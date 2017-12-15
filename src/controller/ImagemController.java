@@ -36,6 +36,8 @@ public class ImagemController implements Initializable{
 	@FXML
 	private Button btnSalvar;
 	@FXML
+	private Button btnAtualizar;
+	@FXML
 	private Button btnUp;
 	@FXML
 	private Button btnLeft;
@@ -68,6 +70,7 @@ public class ImagemController implements Initializable{
 		btnProcurar.setOnAction(o -> buscarFotos());
 		btnSalvar.setOnAction(i -> cadastar());
 		btnDeletar.setOnAction(i -> deletar());
+		btnAtualizar.setOnAction(o -> atualizar());
 		
 		preencher();
 		exibir();	
@@ -128,14 +131,69 @@ public class ImagemController implements Initializable{
 		}
 	}
 	
+	private void atualizar() {
+		
+		Imagem imagem = listNome.getSelectionModel().getSelectedItem();
+		
+		if (imagem == null) {
+			Alert.showAlertWarning("Selecione um um item");	
+		} else {
+			
+			btnSalvar.setText("Atualizar");
+			
+			ImagemDAO imagemDAO = new ImagemDAO();	
+			
+			imagemDAO.getImagem(imagem.getId());
+			
+			txtNome.setText(imagem.getNome());
+			
+			imgView.setImage(null);
+			
+			btnSalvar.setOnAction( p -> update());
+		}
+		
+	}
+	
+	private void update() {
+		
+		Imagem imagem = listNome.getSelectionModel().getSelectedItem();
+		
+		if (txtNome.getText().isEmpty() || file == null) {		
+			Alert.showAlertWarning("Preencha todos os campos");
+		} else {
+			
+			try {
+				fis = new FileInputStream(file);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			ImagemDAO imagemDAO = new ImagemDAO();
+
+			if (imagemDAO.atualizar(txtNome.getText() , fis, imagem.getId())) {
+					
+				preencher();
+					
+				imgView.setImage(null);
+				txtNome.clear();
+				lblCaminho.setText(null);
+				btnSalvar.setText("Salvar");
+					
+				Alert.showAlertInformation("Sucesso");
+					
+			} else {	
+				Alert.showAlertError("Erro ao Atualizar");
+			}	
+		}
+		
+	}
+	
 	private void preencher() {
 		
 		listNome.getItems().clear();
 		
 		ImagemDAO imagemDAO = new ImagemDAO();
 		
-		listNome.getItems().addAll(imagemDAO.listar());
-		
+		listNome.getItems().addAll(imagemDAO.listar());	
 	}
 	
 	private void exibir(){
